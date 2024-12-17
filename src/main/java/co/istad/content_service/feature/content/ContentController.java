@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/articles")
+@RequestMapping("/api/v1/contents")
 public class ContentController {
 
     private final ContentService contentService;
@@ -78,7 +78,7 @@ public class ContentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return contentService.findByAll("", page, size);
+        return contentService.findByAll(""  , page, size);
     }
 
 

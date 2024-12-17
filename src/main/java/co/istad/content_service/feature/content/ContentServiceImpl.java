@@ -6,16 +6,23 @@ import co.istad.content_service.domain.CommunityEngagement;
 import co.istad.content_service.domain.Content;
 import co.istad.content_service.domain.Tags;
 import co.istad.content_service.feature.content.dto.ContentCreateRequest;
+import co.istad.content_service.feature.content.dto.ContentProduceEventRequest;
 import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
 import co.istad.content_service.feature.tag.TagRepository;
 import co.istad.content_service.mapper.ContentMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,6 +40,8 @@ public class ContentServiceImpl implements ContentService {
     private final ContentMapper contentMapper;
 
     private final TagRepository tagRepository;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
 //    @Override
@@ -90,6 +99,11 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
+    public Page<ContentResponse> getAllContentByAuthorId(Long authorId, int page, int size) {
+        return null;
+    }
+
+    @Override
     public BasedMessage updateContent(String id, ContentUpdateRequest contentUpdateRequest) {
         log.info("Updating content with title: {} and tags: {}", contentUpdateRequest.title(), contentUpdateRequest.tags());
 
@@ -122,11 +136,9 @@ public class ContentServiceImpl implements ContentService {
         contentMapper.updateContentFromDto(contentUpdateRequest, content);
 
         contentRepository.save(content);
-        
+
         return new BasedMessage("Content updated successfully");
     }
-
-
 
 
     @Override
@@ -169,7 +181,7 @@ public class ContentServiceImpl implements ContentService {
         // Fetch existing tags
         List<String> requestedTags = contentCreateRequest.tags();
         List<Tags> existingTags = tagRepository.findByNameIn(requestedTags);
-        
+
         List<String> missingTags = requestedTags.stream()
                 .filter(tag -> existingTags.stream().noneMatch(existingTag -> existingTag.getName().equals(tag)))
                 .toList();
@@ -185,14 +197,46 @@ public class ContentServiceImpl implements ContentService {
         communityEngagement.setCommentCount(0L);
         communityEngagement.setReportCount(0L);
         communityEngagement.setShareCount(0L);
-        
+
         Content content = contentMapper.toContent(contentCreateRequest);
-        
+
         content.setTags(existingTags);
 
         contentRepository.save(content);
 
+
+        // Produce event
+        ContentProduceEventRequest contentProduceEventRequest = new ContentProduceEventRequest(
+                content.getTitle(),
+                content.getAuthorId(),
+                content.getSlug(),
+                content.getContent(),
+                content.getThumbnail(),
+                content.getKeyword(),
+                content.getTags().stream().map(Tags::getName).collect(Collectors.toList()),
+                communityEngagement
+        );
+
+        kafkaTemplate.send("content-created-events", content.getId(), contentProduceEventRequest);
         return new BasedMessage("Content created successfully");
     }
+
+    @KafkaListener(topics = "content-created-events", groupId = "content-service")
+    public void consumeContentCreatedEvent(@Payload ContentProduceEventRequest contentProduceEventRequest) {
+        log.info("Consumed content created event: {}", contentProduceEventRequest);
+    }
+
+//    @KafkaListener(topics = "content-created-events", groupId = "content-service")
+//    public void consumeContentCreatedEvent(ConsumerRecord<String, String> record) {
+//        log.info("Raw message: {}", record.value());
+//        try {
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            ContentProduceEventRequest contentProduceEventRequest =
+//                    objectMapper.readValue(record.value(), ContentProduceEventRequest.class);
+//            log.info("Deserialized event: {}", contentProduceEventRequest);
+//        } catch (Exception e) {
+//            log.error("Failed to deserialize message: {}", e.getMessage(), e);
+//        }
+//    }
 
 }
