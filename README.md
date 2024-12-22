@@ -3,6 +3,7 @@
 ![CodeAdvisors Logo](http://167.172.78.79:8090/api/v1/files/preview?fileName=b5d01918-2824-48d7-83e0-fb557ce6bd73_2024-12-21T18-28-24.856529397.jpg)
 
 ## Handle By ***Thoeng Mengseu***
+## **The project is 70% complete**
 
 ## Overview 🌐
 The **Content Service** is a core component of the **CodeAdvisors** platform, designed to manage educational content and related tags. This service allows administrators and users to create, update, search, and manage content efficiently. Additionally, it integrates with the **Tag Service** to categorize and manage content using tags, helping to organize and filter content more effectively.
