@@ -2,34 +2,15 @@ spring.application.name: content-service
 
 
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/content-service
-  kafka:
-    bootstrap-servers:
-      - 167.172.78.79:9092
-      - 167.172.78.79:9093
-      - 167.172.78.79:9094
-    consumer:
-      group-id: content-service
-      auto-offset-reset: latest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: '*'
+  profiles:
+    active: dev
+  config:
+    import: "configserver:"
 
-    producer:
-        key-serializer: org.apache.kafka.common.serialization.StringSerializer
-        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-        properties:
-            spring.json.trusted.packages: '*'
+  cloud:
+    config:
+      uri: http://167.172.78.79:8888
 
-#logging:
-#  level:
-#    org:
-#      springframework:
-#        kafka: debug
-server:
-  port: 8081
+
 
 
