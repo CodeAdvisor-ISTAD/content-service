@@ -81,6 +81,7 @@ public class ContentServiceImpl implements ContentService {
 //    }
 
 
+
     @Override
     public BasedMessage softDeleteById(String id) {
         log.info("Soft deleting content with id: {}", id);
@@ -201,6 +202,7 @@ public class ContentServiceImpl implements ContentService {
         Content content = contentMapper.toContent(contentCreateRequest);
 
         content.setTags(existingTags);
+        content.setIsDeleted(false);
 
         contentRepository.save(content);
 

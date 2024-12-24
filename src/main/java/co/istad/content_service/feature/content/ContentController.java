@@ -46,6 +46,14 @@ public class ContentController {
 //        return contentService.findByTitle(title, page, size);
 //    }
 
+    @GetMapping("/tag/{tag}")
+    Page<ContentResponse> findContentByTags(
+            @PathVariable String tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return contentService.getAllContentByTags(tag, page, size);
+    }
 
     @DeleteMapping("/{id}")
     BasedMessage softDeleteById(@PathVariable String id) {

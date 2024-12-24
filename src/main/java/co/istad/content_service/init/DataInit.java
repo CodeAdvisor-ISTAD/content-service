@@ -1,6 +1,7 @@
 package co.istad.content_service.init;
 
 //import co.istad.content_service.domain.Article;
+
 import co.istad.content_service.domain.CommunityEngagement;
 import co.istad.content_service.domain.Content;
 import co.istad.content_service.domain.Tags;
@@ -9,11 +10,13 @@ import co.istad.content_service.feature.content.ContentRepository;
 import co.istad.content_service.feature.tag.TagRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInit {
@@ -25,6 +28,7 @@ public class DataInit {
 
     @PostConstruct
     public void init() {
+        log.info("Tags = {}", tagRepository.count());
         if (tagRepository.count() == 0) {
             Tags java = new Tags();
             java.setName("java");

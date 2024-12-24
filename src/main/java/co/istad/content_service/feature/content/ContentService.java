@@ -23,7 +23,6 @@ public interface ContentService {
 
 
 
-
 //    Page<ContentResponse> findBySlug(String slug, int page, int size);
 
 //    Page<ContentResponse> findByTitle(String title, int page, int size);

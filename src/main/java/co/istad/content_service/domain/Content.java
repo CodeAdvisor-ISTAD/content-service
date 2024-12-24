@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Document(collection = "article_content")
+@Document(collection = "contents")
 @Getter
 @Setter
 @NoArgsConstructor
