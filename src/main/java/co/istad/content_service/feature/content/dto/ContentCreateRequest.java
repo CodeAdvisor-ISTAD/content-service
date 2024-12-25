@@ -25,9 +25,6 @@ public record ContentCreateRequest(
         @NotNull(message = "Tags is required")
         List<String> tags,
 
-        @NotNull(message = "User ID is required")
-        Long authorId,
-
         @NotNull(message = "isDraft is required")
         Boolean isDraft
 

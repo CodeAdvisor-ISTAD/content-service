@@ -20,7 +20,7 @@ public interface ContentRepository extends MongoRepository<Content, String> {
 
     Boolean existsBySlug(String slug);
 
-    Page<Content> findByTagsNameAndIsDeletedIsFalseAndIsDraftIsFalse(String tag, Pageable pageable);
+    Page<Content> findByTagsContainingAndIsDeletedIsFalseAndIsDraftIsFalse(String tag, Pageable pageable);
 
     Page<Content> findBySlugContainingIgnoreCaseAndIsDeletedIsFalseAndIsDraftIsFalse(String slug, Pageable pageable);
 

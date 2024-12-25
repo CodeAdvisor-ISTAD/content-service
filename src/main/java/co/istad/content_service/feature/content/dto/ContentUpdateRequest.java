@@ -16,8 +16,6 @@ public record ContentUpdateRequest(
 
         List<String> tags,
 
-        Long authorId,
-
         Boolean isDraft
 ) {
 }

@@ -30,7 +30,7 @@ public class Content {
 
     private String slug;
 
-    private List<Tags> tags;
+    private List<String> tags;
 
     private CommunityEngagement communityEngagement;
 

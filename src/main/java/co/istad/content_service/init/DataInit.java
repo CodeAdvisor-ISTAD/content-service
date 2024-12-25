@@ -374,7 +374,7 @@ public class DataInit {
             Content.setContent("Java 8 Features");
             Content.setThumbnail("https://www.javatpoint.com/images/java-8.png");
             Content.setSlug("java-8-features");
-            Content.setTags(List.of(tagRepository.findByName("java")));
+            Content.setTags(List.of("java", "spring-boot", "kotlin"));
             Content.setCommunityEngagement(communityEngagement);
             Content.setIsDeleted(false);
             Content.setIsDraft(false);

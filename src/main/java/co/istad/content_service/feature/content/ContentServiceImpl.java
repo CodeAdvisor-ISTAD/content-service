@@ -6,27 +6,23 @@ import co.istad.content_service.domain.CommunityEngagement;
 import co.istad.content_service.domain.Content;
 import co.istad.content_service.domain.Tags;
 import co.istad.content_service.feature.content.dto.ContentCreateRequest;
-import co.istad.content_service.feature.content.dto.ContentProduceEventRequest;
+import co.istad.content_service.feature.content.dto.ContentCreatedEvent;
 import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
 import co.istad.content_service.feature.tag.TagRepository;
 import co.istad.content_service.mapper.ContentMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -129,7 +125,7 @@ public class ContentServiceImpl implements ContentService {
                         "The following tags are missing: " + String.join(", ", missingTags)
                 );
             }
-            content.setTags(existingTags);
+            content.setTags(existingTags.stream().map(Tags::getName).collect(Collectors.toList()));
         } else {
             content.setTags(content.getTags());
         }
@@ -156,7 +152,7 @@ public class ContentServiceImpl implements ContentService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Content> contentsPage = switch (searchBy.toLowerCase()) {
             case "draft" -> contentRepository.findByIsDraftIsTrueAndIsDeletedIsFalse(pageable);
-            case "tag" -> contentRepository.findByTagsNameAndIsDeletedIsFalseAndIsDraftIsFalse(query, pageable);
+            case "tag" -> contentRepository.findByTagsContainingAndIsDeletedIsFalseAndIsDraftIsFalse(query, pageable);
             case "slug" ->
                     contentRepository.findBySlugContainingIgnoreCaseAndIsDeletedIsFalseAndIsDraftIsFalse(query, pageable);
             case "title" ->
@@ -179,6 +175,7 @@ public class ContentServiceImpl implements ContentService {
     public BasedMessage createContent(ContentCreateRequest contentCreateRequest) {
         log.info("Creating Content: {}", contentCreateRequest);
 
+
         // Fetch existing tags
         List<String> requestedTags = contentCreateRequest.tags();
         List<Tags> existingTags = tagRepository.findByNameIn(requestedTags);
@@ -193,6 +190,8 @@ public class ContentServiceImpl implements ContentService {
                     "The following tags are missing: " + String.join(", ", missingTags)
             );
         }
+        List<String> existingTagNames = existingTags.stream().map(Tags::getName).toList();
+
         CommunityEngagement communityEngagement = new CommunityEngagement();
         communityEngagement.setLikeCount(0L);
         communityEngagement.setCommentCount(0L);
@@ -201,31 +200,32 @@ public class ContentServiceImpl implements ContentService {
 
         Content content = contentMapper.toContent(contentCreateRequest);
 
-        content.setTags(existingTags);
+        content.setCommunityEngagement(communityEngagement);
+        content.setTags(existingTagNames);
         content.setIsDeleted(false);
 
         contentRepository.save(content);
 
 
         // Produce event
-        ContentProduceEventRequest contentProduceEventRequest = new ContentProduceEventRequest(
+        ContentCreatedEvent contentCreatedEvent = new ContentCreatedEvent(
                 content.getTitle(),
                 content.getAuthorId(),
                 content.getSlug(),
                 content.getContent(),
                 content.getThumbnail(),
                 content.getKeyword(),
-                content.getTags().stream().map(Tags::getName).collect(Collectors.toList()),
+                content.getTags(),
                 communityEngagement
         );
 
-        kafkaTemplate.send("content-created-events", content.getId(), contentProduceEventRequest);
+        kafkaTemplate.send("content-created-events-topic", content.getId(), contentCreatedEvent);
         return new BasedMessage("Content created successfully");
     }
 
-    @KafkaListener(topics = "content-created-events", groupId = "content-service")
-    public void consumeContentCreatedEvent(@Payload ContentProduceEventRequest contentProduceEventRequest) {
-        log.info("Consumed content created event: {}", contentProduceEventRequest);
+    @KafkaListener(topics = "content-created-events-topic", groupId = "content-service")
+    public void consumeContentCreatedEvent(@Payload ContentCreatedEvent contentCreatedEvent) {
+        log.info("Consumed content created event: {}", contentCreatedEvent);
     }
 
 //    @KafkaListener(topics = "content-created-events", groupId = "content-service")

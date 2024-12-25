@@ -4,7 +4,7 @@ import co.istad.content_service.domain.CommunityEngagement;
 
 import java.util.List;
 
-public record ContentProduceEventRequest(
+public record ContentCreatedEvent(
         String title,
         String authorId,
         String slug,
