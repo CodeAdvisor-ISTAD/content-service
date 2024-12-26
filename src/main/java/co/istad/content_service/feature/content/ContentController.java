@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -47,11 +48,13 @@ public class ContentController {
 //    }
 
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     BasedMessage softDeleteById(@PathVariable String id) {
         return contentService.softDeleteById(id);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}")
     BasedMessage updateContent(@PathVariable String id, @Valid @RequestBody ContentUpdateRequest contentUpdateRequest) {
         return contentService.updateContent(id, contentUpdateRequest);
@@ -82,6 +85,7 @@ public class ContentController {
     }
 
 
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     BasedMessage createArticle(@Valid @RequestBody ContentCreateRequest contentCreateRequest) {

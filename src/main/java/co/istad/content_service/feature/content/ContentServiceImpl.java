@@ -210,7 +210,7 @@ public class ContentServiceImpl implements ContentService {
         // Produce event
         ContentCreatedEvent contentCreatedEvent = new ContentCreatedEvent(
                 content.getTitle(),
-                content.getAuthorId(),
+                content.getAuthorUuid(),
                 content.getSlug(),
                 content.getContent(),
                 content.getThumbnail(),

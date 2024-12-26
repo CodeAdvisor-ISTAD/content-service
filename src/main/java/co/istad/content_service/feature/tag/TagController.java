@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,5 +22,16 @@ public class TagController {
     @GetMapping("/{name}") // http://localhost:port/api/v1/tags/name?name=java
     public TagResponse findByName(@PathVariable String name) {
         return tagService.findByName(name);
+    }
+
+    @GetMapping("/popular") // http://localhost:port/api/v1/tags/limit10
+    public Set<TagResponse> get10Tags() {
+        return tagService.getPopularTags();
+    }
+
+
+    @GetMapping("/trending") // http://localhost:8082/api/v1/tags/trending
+    public Set<TagResponse> getTrendingTags() {
+        return tagService.getTrendingTags();
     }
 }

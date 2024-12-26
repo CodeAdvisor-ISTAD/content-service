@@ -5,6 +5,7 @@ import co.istad.content_service.feature.tag.dto.TagResponse;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Set;
 //import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TagRepository extends MongoRepository<Tags, String> {
@@ -15,5 +16,7 @@ public interface TagRepository extends MongoRepository<Tags, String> {
     List<TagResponse> findAllByOrderByNameDesc(); // Z-A
 
     List<Tags> findByNameIn(List<String> names);
+
+//    Set<TagResponse> findAllLimit10();
 
 }

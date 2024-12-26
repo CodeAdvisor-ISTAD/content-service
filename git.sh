@@ -1,5 +1,5 @@
 git add .
 
-git commit -m "update"
+git commit -m "update the logic in content sharing"
 
 git push

@@ -39,8 +39,8 @@ public class Content {
     private Boolean isDraft;
 
     @CreatedBy
-    @Field("author_id")
-    private String authorId;
+    @Field("author_uuid")
+    private String authorUuid;
 
     @CreatedDate
     @Field("created_date")
