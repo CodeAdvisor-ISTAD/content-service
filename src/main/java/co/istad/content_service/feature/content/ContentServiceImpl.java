@@ -79,7 +79,6 @@ public class ContentServiceImpl implements ContentService {
 //    }
 
 
-
     @Override
     public BasedMessage softDeleteById(String id, Jwt jwt) {
         log.info("Soft deleting content with id: {}", id);
@@ -104,8 +103,11 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public Page<ContentResponse> getAllContentByAuthorId(Long authorId, int page, int size) {
-        return null;
+    public Page<ContentResponse> getAllContentByAuthorUuid(String authorUuid, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Content> contentsPage = contentRepository.findByAuthorUuidAndIsDeletedIsFalse(authorUuid, pageable);
+
+        return contentsPage.map(contentMapper::toContentResponse);
     }
 
     @Override
@@ -188,6 +190,14 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public BasedResponse<?> createContent(ContentCreateRequest contentCreateRequest, Jwt jwt) {
+        String userUuid = jwt.getClaimAsString("userUuid");
+        if (userUuid == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "User not authenticated"
+            );
+        }
+
         log.info("Creating Content: {}", contentCreateRequest);
 
 
@@ -234,8 +244,9 @@ public class ContentServiceImpl implements ContentService {
 
 
         kafkaTemplate.send("content-created-events-topic", content.getId(), ContentCreatedEvent.builder()
+                .id(content.getId())
                 .title(content.getTitle())
-                .authorUuid(jwt.getClaimAsString("uuid"))
+                .authorUuid(userUuid)
                 .slug(content.getSlug())
                 .content(content.getContent())
                 .thumbnail(content.getThumbnail())

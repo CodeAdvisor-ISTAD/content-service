@@ -25,4 +25,6 @@ public interface ContentRepository extends MongoRepository<Content, String> {
     Page<Content> findBySlugContainingIgnoreCaseAndIsDeletedIsFalseAndIsDraftIsFalse(String slug, Pageable pageable);
 
     Page<Content> findByIsDraftIsTrueAndIsDeletedIsFalse(Pageable pageable);
+
+    Page<Content> findByAuthorUuidAndIsDeletedIsFalse(String authorUuid, Pageable pageable);
 }

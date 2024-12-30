@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class ContentCreatedEvent{
+    private String id;
     private String title;
     private String authorUuid;
     private String slug;

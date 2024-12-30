@@ -8,13 +8,15 @@ import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/contents")
@@ -23,38 +25,23 @@ public class ContentController {
     private final ContentService contentService;
 
 
-//    @GetMapping("/tag/{tag}")
-//    Page<ContentResponse> findContentByTag(
-//            @PathVariable String tag,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//        return contentService.findContentByTag(tag, page, size);
-//    }
-    //    @GetMapping("/slug/{slug}")
-//    Page<ContentResponse> findArticleBySlug(
-//            @PathVariable String slug,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//        return contentService.findBySlug(slug, page, size);
-//    }
-
-
-//    @GetMapping
-//    Page<ContentResponse> findContentByTitle(
-//            @RequestParam String title,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//        return contentService.findByTitle(title, page, size);
-//    }
-
+    @GetMapping("/me")
+    public String getContentMe(Authentication authentication,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size) {
+        Object oauth2 = authentication.getPrincipal();
+        Jwt jwt = (Jwt) oauth2;
+        String userUuid = jwt.getClaimAsString("userUuid");
+        log.info("userUuid: {}", userUuid);
+        return contentService.getAllContentByAuthorUuid(userUuid, page, size).toString();
+    }
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     BasedMessage softDeleteById(@PathVariable String id,
-                                @AuthenticationPrincipal Jwt jwt) {
+                                Authentication auth) {
+        Object oauth2 = auth.getPrincipal();
+        Jwt jwt = (Jwt) oauth2;
         return contentService.softDeleteById(id, jwt);
     }
 
@@ -62,7 +49,9 @@ public class ContentController {
     @PatchMapping("/{id}")
     BasedMessage updateContent(@PathVariable String id,
                                @Valid @RequestBody ContentUpdateRequest contentUpdateRequest,
-                               @AuthenticationPrincipal Jwt jwt) {
+                               Authentication auth) {
+        Object oauth2 = auth.getPrincipal();
+        Jwt jwt = (Jwt) oauth2;
         return contentService.updateContent(id, contentUpdateRequest,jwt );
     }
 
@@ -96,7 +85,9 @@ public class ContentController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/create")
     BasedResponse<?> createArticle(@Valid @RequestBody ContentCreateRequest contentCreateRequest,
-                                @AuthenticationPrincipal Jwt jwt) {
+                                   Authentication auth) {
+        Object oauth2 = auth.getPrincipal();
+        Jwt jwt = (Jwt) oauth2;
         return contentService.createContent(contentCreateRequest, jwt);
     }
 

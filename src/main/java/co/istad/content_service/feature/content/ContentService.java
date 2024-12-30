@@ -21,7 +21,7 @@ public interface ContentService {
 
     BasedMessage softDeleteById(String id, Jwt jwt);
 
-    Page<ContentResponse> getAllContentByAuthorId(Long authorId, int page, int size);
+    Page<ContentResponse> getAllContentByAuthorUuid(String authorUuid, int page, int size);
 
 
 
