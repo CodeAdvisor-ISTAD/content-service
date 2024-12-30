@@ -2,6 +2,7 @@ package co.istad.content_service.feature.tag;
 
 import co.istad.content_service.feature.tag.dto.TagResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class TagController {
     private final TagService tagService;
 
 
+//    @PreAuthorize("isAuthenticated()")
     @GetMapping("/all") // http://localhost:port/api/v1/tags/all?filter=desc
     public List<TagResponse> findAll(@RequestParam(defaultValue = "asc") String filter) {
         return tagService.findAll(filter);

@@ -9,6 +9,14 @@ spring:
     config:
       uri: http://167.172.78.79:8888
 
+logging:
+  level:
+    org:
+      springframework:
+        #        web: DEBUG
+        #        mail: DEBUG
+        security: DEBUG
+
 
 
 

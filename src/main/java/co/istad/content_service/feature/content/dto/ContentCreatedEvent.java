@@ -1,18 +1,23 @@
 package co.istad.content_service.feature.content.dto;
 
 import co.istad.content_service.domain.CommunityEngagement;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-public record ContentCreatedEvent(
-        String title,
-        String authorId,
-        String slug,
-        String content,
-        String thumbnail,
-        String keyword,
-        List<String> tags,
-        CommunityEngagement communityEngagement
-
-) {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class ContentCreatedEvent{
+    private String title;
+    private String authorUuid;
+    private String slug;
+    private String content;
+    private String thumbnail;
+    private String keyword;
+    private List<String> tags;
 }

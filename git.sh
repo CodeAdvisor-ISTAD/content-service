@@ -1,5 +1,5 @@
 git add .
 
-git commit -m "update the logic in content sharing"
+git commit -m "Validate User Created Post and Update, Delete"
 
 git push

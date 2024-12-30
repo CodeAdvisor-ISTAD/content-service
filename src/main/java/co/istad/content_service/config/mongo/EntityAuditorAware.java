@@ -20,11 +20,12 @@ public class EntityAuditorAware implements AuditorAware<String> {
     public Optional<String> getCurrentAuditor() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof Jwt)) {
-            return Optional.empty();
+            return Optional.of("Something went wrong");
         }
 
         Jwt jwt = (Jwt) auth.getPrincipal();
-        String uuid = jwt.getClaim("uuid");
+        String uuid = jwt.getClaim("userUuid");
+        System.out.println("UUID USER"+uuid);
 //        return Optional.of(jwt.getId());
         return Optional.of(uuid);
     }

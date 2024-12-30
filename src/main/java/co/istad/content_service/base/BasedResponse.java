@@ -8,5 +8,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 public class BasedResponse<T> {
+    private Integer code;
     private T payload;
 }

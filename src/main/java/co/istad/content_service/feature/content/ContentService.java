@@ -1,13 +1,15 @@
 package co.istad.content_service.feature.content;
 
 import co.istad.content_service.base.BasedMessage;
+import co.istad.content_service.base.BasedResponse;
 import co.istad.content_service.feature.content.dto.ContentCreateRequest;
 import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
 import org.springframework.data.domain.Page;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface ContentService {
-    BasedMessage createContent(ContentCreateRequest contentCreateRequest);
+    BasedResponse<?> createContent(ContentCreateRequest contentCreateRequest, Jwt jwt);
 
     Page<ContentResponse> findByAll(String tag, int page, int size);
 
@@ -15,9 +17,9 @@ public interface ContentService {
 
     ContentResponse findContentById(String id);
 
-    BasedMessage updateContent(String id, ContentUpdateRequest contentUpdateRequest);
+    BasedMessage updateContent(String id, ContentUpdateRequest contentUpdateRequest, Jwt jwt);
 
-    BasedMessage softDeleteById(String id);
+    BasedMessage softDeleteById(String id, Jwt jwt);
 
     Page<ContentResponse> getAllContentByAuthorId(Long authorId, int page, int size);
 

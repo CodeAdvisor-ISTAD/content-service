@@ -40,7 +40,7 @@ public class TagServiceImpl implements TagService {
     public TagResponse findByName(String name) {
         log.info("Fetching tag by name: {}", name);
         Tags tag = tagRepository.findByName(name);
-        return new TagResponse(tag.getName());
+        return new TagResponse(tag.getName(), tag.getDescription());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class TagServiceImpl implements TagService {
 
         // Convert Tag entities to TagResponse DTOs
         for (Tags tag : tags) {
-            tagResponses.add(new TagResponse(tag.getName()));
+            tagResponses.add(new TagResponse(tag.getName(), tag.getDescription()));
         }
 
         return tagResponses;
@@ -65,7 +65,7 @@ public class TagServiceImpl implements TagService {
 
         // Convert Tag entities to TagResponse DTOs
         for (Tags tag : tags) {
-            tagResponses.add(new TagResponse(tag.getName()));
+            tagResponses.add(new TagResponse(tag.getName(), tag.getDescription()));
         }
 
         return tagResponses;

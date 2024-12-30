@@ -2,6 +2,7 @@ package co.istad.content_service.feature.content;
 
 
 import co.istad.content_service.base.BasedMessage;
+import co.istad.content_service.base.BasedResponse;
 import co.istad.content_service.domain.CommunityEngagement;
 import co.istad.content_service.domain.Content;
 import co.istad.content_service.domain.Tags;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -79,7 +81,7 @@ public class ContentServiceImpl implements ContentService {
 
 
     @Override
-    public BasedMessage softDeleteById(String id) {
+    public BasedMessage softDeleteById(String id, Jwt jwt) {
         log.info("Soft deleting content with id: {}", id);
 
         Content content = contentRepository.findById(id).orElseThrow(
@@ -88,6 +90,12 @@ public class ContentServiceImpl implements ContentService {
                         "Content not found..."
                 )
         );
+        if (!content.getAuthorUuid().equals(jwt.getClaimAsString("uuid"))) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to delete this content"
+            );
+        }
 
         content.setIsDeleted(true);
         contentRepository.save(content);
@@ -101,7 +109,7 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public BasedMessage updateContent(String id, ContentUpdateRequest contentUpdateRequest) {
+    public BasedMessage updateContent(String id, ContentUpdateRequest contentUpdateRequest, Jwt jwt) {
         log.info("Updating content with title: {} and tags: {}", contentUpdateRequest.title(), contentUpdateRequest.tags());
 
         Content content = contentRepository.findById(id).orElseThrow(
@@ -110,6 +118,13 @@ public class ContentServiceImpl implements ContentService {
                         "Content not found..."
                 )
         );
+
+        if (!content.getAuthorUuid().equals(jwt.getClaimAsString("uuid"))) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to update this content"
+            );
+        }
 
         if (contentUpdateRequest.tags() != null && !contentUpdateRequest.tags().isEmpty()) {
             List<String> requestedTags = contentUpdateRequest.tags();
@@ -172,7 +187,7 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public BasedMessage createContent(ContentCreateRequest contentCreateRequest) {
+    public BasedResponse<?> createContent(ContentCreateRequest contentCreateRequest, Jwt jwt) {
         log.info("Creating Content: {}", contentCreateRequest);
 
 
@@ -190,6 +205,14 @@ public class ContentServiceImpl implements ContentService {
                     "The following tags are missing: " + String.join(", ", missingTags)
             );
         }
+
+        if (contentRepository.existsBySlug(contentCreateRequest.slug())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Content with slug already exists"
+            );
+        }
+
         List<String> existingTagNames = existingTags.stream().map(Tags::getName).toList();
 
         CommunityEngagement communityEngagement = new CommunityEngagement();
@@ -208,37 +231,27 @@ public class ContentServiceImpl implements ContentService {
 
 
         // Produce event
-        ContentCreatedEvent contentCreatedEvent = new ContentCreatedEvent(
-                content.getTitle(),
-                content.getAuthorUuid(),
-                content.getSlug(),
-                content.getContent(),
-                content.getThumbnail(),
-                content.getKeyword(),
-                content.getTags(),
-                communityEngagement
-        );
 
-        kafkaTemplate.send("content-created-events-topic", content.getId(), contentCreatedEvent);
-        return new BasedMessage("Content created successfully");
+
+        kafkaTemplate.send("content-created-events-topic", content.getId(), ContentCreatedEvent.builder()
+                .title(content.getTitle())
+                .authorUuid(jwt.getClaimAsString("uuid"))
+                .slug(content.getSlug())
+                .content(content.getContent())
+                .thumbnail(content.getThumbnail())
+                .keyword(content.getKeyword())
+                .tags(content.getTags())
+                .build());
+
+        return BasedResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .payload("Question created successfully")
+                .build();
     }
 
     @KafkaListener(topics = "content-created-events-topic", groupId = "content-service")
     public void consumeContentCreatedEvent(@Payload ContentCreatedEvent contentCreatedEvent) {
         log.info("Consumed content created event: {}", contentCreatedEvent);
     }
-
-//    @KafkaListener(topics = "content-created-events", groupId = "content-service")
-//    public void consumeContentCreatedEvent(ConsumerRecord<String, String> record) {
-//        log.info("Raw message: {}", record.value());
-//        try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            ContentProduceEventRequest contentProduceEventRequest =
-//                    objectMapper.readValue(record.value(), ContentProduceEventRequest.class);
-//            log.info("Deserialized event: {}", contentProduceEventRequest);
-//        } catch (Exception e) {
-//            log.error("Failed to deserialize message: {}", e.getMessage(), e);
-//        }
-//    }
 
 }

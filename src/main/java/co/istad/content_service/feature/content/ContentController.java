@@ -2,6 +2,7 @@ package co.istad.content_service.feature.content;
 
 
 import co.istad.content_service.base.BasedMessage;
+import co.istad.content_service.base.BasedResponse;
 import co.istad.content_service.feature.content.dto.ContentCreateRequest;
 import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -50,14 +53,17 @@ public class ContentController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    BasedMessage softDeleteById(@PathVariable String id) {
-        return contentService.softDeleteById(id);
+    BasedMessage softDeleteById(@PathVariable String id,
+                                @AuthenticationPrincipal Jwt jwt) {
+        return contentService.softDeleteById(id, jwt);
     }
 
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}")
-    BasedMessage updateContent(@PathVariable String id, @Valid @RequestBody ContentUpdateRequest contentUpdateRequest) {
-        return contentService.updateContent(id, contentUpdateRequest);
+    BasedMessage updateContent(@PathVariable String id,
+                               @Valid @RequestBody ContentUpdateRequest contentUpdateRequest,
+                               @AuthenticationPrincipal Jwt jwt) {
+        return contentService.updateContent(id, contentUpdateRequest,jwt );
     }
 
     @GetMapping("/{id}")
@@ -75,7 +81,7 @@ public class ContentController {
         return contentService.searchContent(query, searchBy, page, size);
     }
 
-
+//    @PreAuthorize("isAuthenticated()")
     @GetMapping("/all")
     Page<ContentResponse> findByAll(
             @RequestParam(defaultValue = "0") int page,
@@ -85,11 +91,13 @@ public class ContentController {
     }
 
 
+
     @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    BasedMessage createArticle(@Valid @RequestBody ContentCreateRequest contentCreateRequest) {
-        return contentService.createContent(contentCreateRequest);
+    @PostMapping("/create")
+    BasedResponse<?> createArticle(@Valid @RequestBody ContentCreateRequest contentCreateRequest,
+                                @AuthenticationPrincipal Jwt jwt) {
+        return contentService.createContent(contentCreateRequest, jwt);
     }
 
 
