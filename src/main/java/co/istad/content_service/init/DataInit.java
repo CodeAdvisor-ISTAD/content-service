@@ -477,7 +477,8 @@ public class DataInit {
             communityEngagement.setLikeCount(0L);
             communityEngagement.setCommentCount(0L);
             communityEngagement.setReportCount(0L);
-            communityEngagement.setShareCount(0L);
+            communityEngagement.setLoveCount(0L);
+            communityEngagement.setFireCount(0L);
             communityEngagement.setLastUpdated(LocalDateTime.now());
 
             Content Content = new Content();

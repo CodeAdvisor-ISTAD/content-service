@@ -1,6 +1,5 @@
-package co.istad.content_service.feature.content.dto;
+package co.istad.content_service.config.kafka.event;
 
-import co.istad.content_service.domain.CommunityEngagement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -10,6 +10,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
@@ -47,22 +48,28 @@ public class KafkaConfig {
 //        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new JsonSerializer<>(getObjectMapper()));
 //    }
 //
-//    // Consumer configuration
 //    @Bean
 //    public ConsumerFactory<String, Object> consumerFactory() {
 //        Map<String, Object> config = new HashMap<>();
-//        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "167.172.78.79:9092,167.172.78.79:9093,167.172.78.79:9094");
+//
 //        config.put(ConsumerConfig.GROUP_ID_CONFIG, "content-service");
-//        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // Start from the earliest offset if group is new
 //        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 //        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+//        config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
 //        config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-//        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // Allows deserialization of all specified packages
-//        config.put(JsonDeserializer.TYPE_MAPPINGS, "content:co.istad.content_service.feature.content.dto.ContentProduceEventRequest");
-//        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "co.istad.content_service.feature.content.dto.ContentProduceEventRequest");
-//        return new DefaultKafkaConsumerFactory<>(config,
-//                new ErrorHandlingDeserializer<>(new StringDeserializer()),
-//                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(getObjectMapper())));
+//        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+//        config.put(JsonDeserializer.TYPE_MAPPINGS, "notification:co.istad.codeadvisor.notification.domain.Notification");
+//        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "co.istad.codeadvisor.notification.domain.Notification");
+//
+//        return new DefaultKafkaConsumerFactory<>(config, new ErrorHandlingDeserializer<>(new StringDeserializer()), new ErrorHandlingDeserializer<>(new JsonDeserializer<>(new ObjectMapper())));
+//    }
+//
+//    @Bean
+//    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+//        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+//                new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(consumerFactory());
+//        return factory;
 //    }
 //
 //    // KafkaTemplate bean

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -17,9 +18,12 @@ public class CommunityEngagement {
 
     private Long commentCount;
 
-    private Long shareCount;
-
     private Long reportCount;
 
+    private Long fireCount;
+
+    private Long loveCount;
+
+    @LastModifiedDate
     private LocalDateTime lastUpdated;
 }

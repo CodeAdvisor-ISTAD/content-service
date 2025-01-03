@@ -8,6 +8,16 @@ spring:
   cloud:
     config:
       uri: http://167.172.78.79:8888
+  kafka:
+    security:
+      protocol: SSL
+    ssl:
+      trust-store-location: classpath:kafka.server.truststore.jks
+      trust-store-password: password123
+      key-store-location: classpath:kafka.server.keystore.jks
+      key-store-password: password123
+      key-password: password123
+
 
 logging:
   level:

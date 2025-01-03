@@ -3,11 +3,13 @@ package co.istad.content_service.feature.content;
 
 import co.istad.content_service.base.BasedMessage;
 import co.istad.content_service.base.BasedResponse;
+import co.istad.content_service.config.kafka.event.CommentProducer;
+import co.istad.content_service.config.kafka.event.ContentCreatedEvent;
+import co.istad.content_service.config.kafka.event.ContentReactedProducer;
 import co.istad.content_service.domain.CommunityEngagement;
 import co.istad.content_service.domain.Content;
 import co.istad.content_service.domain.Tags;
 import co.istad.content_service.feature.content.dto.ContentCreateRequest;
-import co.istad.content_service.feature.content.dto.ContentCreatedEvent;
 import co.istad.content_service.feature.content.dto.ContentResponse;
 import co.istad.content_service.feature.content.dto.ContentUpdateRequest;
 import co.istad.content_service.feature.tag.TagRepository;
@@ -229,7 +231,8 @@ public class ContentServiceImpl implements ContentService {
         communityEngagement.setLikeCount(0L);
         communityEngagement.setCommentCount(0L);
         communityEngagement.setReportCount(0L);
-        communityEngagement.setShareCount(0L);
+        communityEngagement.setLoveCount(0L);
+        communityEngagement.setFireCount(0L);
 
         Content content = contentMapper.toContent(contentCreateRequest);
 
@@ -260,9 +263,178 @@ public class ContentServiceImpl implements ContentService {
                 .build();
     }
 
-    @KafkaListener(topics = "content-created-events-topic", groupId = "content-service")
-    public void consumeContentCreatedEvent(@Payload ContentCreatedEvent contentCreatedEvent) {
-        log.info("Consumed content created event: {}", contentCreatedEvent);
+//    @KafkaListener(topics = "content-created-events-topic", groupId = "content-service")
+//    public void consumeContentCreatedEvent(@Payload ContentCreatedEvent contentCreatedEvent) {
+//        log.info("Consumed content created event: {}", contentCreatedEvent);
+//    }
+
+    //comment-created-events-topic
+    @KafkaListener(topics = "comment-created-events-topic", groupId = "content-service")
+    public void commentCount(@Payload CommentProducer commentCreatedRequest) {
+        try {
+            Content content = contentRepository.findById(commentCreatedRequest.getContentId()).orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Content not found..."
+                    )
+            );
+
+            CommunityEngagement communityEngagement = content.getCommunityEngagement();
+            communityEngagement.setCommentCount(communityEngagement.getCommentCount() + 1);
+            content.setCommunityEngagement(communityEngagement);
+
+            contentRepository.save(content);
+
+            log.info("Comment count updated for content: {}", content.getId());
+        } catch (Exception e) {
+            log.error("Error updating comment count for content: {}", e.getMessage());
+        }
+    }
+
+    // content-reacted-events-topic
+//    @KafkaListener(topics = "content-reacted-events-topic", groupId = "content-service")
+//    public void reactionCount(@Payload ContentReactedProducer contentReactedProducer) {
+//        try {
+//            Content content = contentRepository.findById(contentReactedProducer.getContentId()).orElseThrow(
+//                    () -> new ResponseStatusException(
+//                            HttpStatus.NOT_FOUND,
+//                            "Content not found..."
+//                    )
+//            );
+//
+//            if (contentReactedProducer.getOldReactionType() != null) {
+//                if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("LIKE")) {
+//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                    communityEngagement.setLikeCount(communityEngagement.getLikeCount() - 1);
+//                    content.setCommunityEngagement(communityEngagement);
+//                } else if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("FIRE")) {
+//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                    communityEngagement.setFireCount(communityEngagement.getFireCount() - 1);
+//                    content.setCommunityEngagement(communityEngagement);
+//                } else if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("LOVE")) {
+//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                    communityEngagement.setLoveCount(communityEngagement.getLoveCount() - 1);
+//                    content.setCommunityEngagement(communityEngagement);
+//                }
+//            }
+//
+//            if (contentReactedProducer.getReactionType().equalsIgnoreCase("LIKE")) {
+//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                communityEngagement.setLikeCount(communityEngagement.getLikeCount() + 1);
+//                content.setCommunityEngagement(communityEngagement);
+//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("DISLIKE")) {
+//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                communityEngagement.setLikeCount(communityEngagement.getLikeCount() - 1);
+//                content.setCommunityEngagement(communityEngagement);
+//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("FIRE")) {
+//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                communityEngagement.setFireCount(communityEngagement.getFireCount() + 1);
+//                content.setCommunityEngagement(communityEngagement);
+//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("LOVE")) {
+//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
+//                communityEngagement.setLoveCount(communityEngagement.getLoveCount() + 1);
+//                content.setCommunityEngagement(communityEngagement);
+//            }
+//
+//            contentRepository.save(content);
+//
+//
+//            log.info("Reaction count updated for content: {}", content.getId());
+//        } catch (Exception e) {
+//            log.error("Error updating reaction count for content: {}", e.getMessage());
+//        }
+//    }
+
+    @KafkaListener(topics = "content-reacted-events-topic", groupId = "content-service")
+    public void reactionCount(@Payload ContentReactedProducer contentReactedProducer) {
+        try {
+            Content content = contentRepository.findById(contentReactedProducer.getContentId()).orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Content not found..."
+                    )
+            );
+
+            // Debug: Print the reaction type
+            log.debug("Processing reaction: Old Reaction = {}, New Reaction = {}",
+                    contentReactedProducer.getOldReactionType(),
+                    contentReactedProducer.getReactionType());
+
+            // Decrement old reaction count
+            if (contentReactedProducer.getOldReactionType() != null) {
+                switch (contentReactedProducer.getOldReactionType().toUpperCase()) {
+                    case "LIKE":
+                        content.getCommunityEngagement().setLikeCount(content.getCommunityEngagement().getLikeCount() - 1);
+                        break;
+                    case "FIRE":
+                        content.getCommunityEngagement().setFireCount(content.getCommunityEngagement().getFireCount() - 1);
+                        break;
+                    case "LOVE":
+                        content.getCommunityEngagement().setLoveCount(content.getCommunityEngagement().getLoveCount() - 1);
+                        break;
+                    default:
+                        log.warn("Unknown old reaction type: {}", contentReactedProducer.getOldReactionType());
+                        break;
+                }
+            }
+
+            // Increment new reaction count
+            switch (contentReactedProducer.getReactionType().toUpperCase()) {
+                case "LIKE":
+                    content.getCommunityEngagement().setLikeCount(content.getCommunityEngagement().getLikeCount() + 1);
+                    break;
+                case "DISLIKE":
+                    content.getCommunityEngagement().setLikeCount(content.getCommunityEngagement().getLikeCount() - 1);
+                    break;
+                case "FIRE":
+                    content.getCommunityEngagement().setFireCount(content.getCommunityEngagement().getFireCount() + 1);
+                    break;
+                case "LOVE":
+                    content.getCommunityEngagement().setLoveCount(content.getCommunityEngagement().getLoveCount() + 1);
+                    break;
+                case "UNLOVE":
+                    content.getCommunityEngagement().setLoveCount(content.getCommunityEngagement().getLoveCount() - 1);
+                    break;
+                case "UNFIRE":
+                    content.getCommunityEngagement().setFireCount(content.getCommunityEngagement().getFireCount() - 1);
+                    break;
+                default:
+                    log.warn("Unknown new reaction type: {}", contentReactedProducer.getReactionType());
+                    break;
+            }
+
+            contentRepository.save(content);
+            log.info("Reaction count updated for content: {}. Old Reaction: {}, New Reaction: {}",
+                    content.getId(),
+                    contentReactedProducer.getOldReactionType(),
+                    contentReactedProducer.getReactionType()
+            );
+        } catch (Exception e) {
+            log.error("Error updating reaction count for content {}: {}", contentReactedProducer.getContentId(), e.getMessage());
+        }
+    }
+
+    // content-reported-events-topic
+    @KafkaListener(topics = "content-reported-events-topic", groupId = "content-service")
+    public void reportCount(@Payload ContentReactedProducer contentReactedProducer) {
+        try {
+            Content content = contentRepository.findById(contentReactedProducer.getContentId()).orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Content not found..."
+                    )
+            );
+
+            CommunityEngagement communityEngagement = content.getCommunityEngagement();
+            communityEngagement.setReportCount(communityEngagement.getReportCount() + 1);
+            content.setCommunityEngagement(communityEngagement);
+
+            contentRepository.save(content);
+
+            log.info("Report count updated for content: {}", content.getId());
+        } catch (Exception e) {
+            log.error("Error updating report count for content: {}", e.getMessage());
+        }
     }
 
 }
