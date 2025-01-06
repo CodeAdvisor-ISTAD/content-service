@@ -43,43 +43,15 @@ public class ContentServiceImpl implements ContentService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-
-//    @Override
-//    public Page<ContentResponse> findContentByTag(String tag, int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Content> contentsPage = contentRepository.findByTagsName(tag, pageable);
-//
-//        return contentsPage.map(contentMapper::toContentResponse);
-//    }
-    //    @Override
-//    public Page<ContentResponse> findBySlug(String slug, int page, int size) {
-//        if (!contentRepository.existsBySlug(slug)) {
-//            throw new ResponseStatusException(
-//                    HttpStatus.NOT_FOUND,
-//                    "Content not found..."
-//            );
-//        }
-//        // Create Pageable object with page and size, no sorting
-//        Pageable pageable = PageRequest.of(page, size);
-//
-//        // Assuming you're searching by slug here as well, adjust query to filter by slug if needed
-//        Page<Content> contentsPage = contentRepository.findBySlugContainingIgnoreCase(slug, pageable); // Filter by slug if needed
-//
-//        return contentsPage.map(contentMapper::toContentResponse);
-//    }
-
-//    @Override
-//    public Page<ContentResponse> findByTitle(String title, int page, int size) {
-//        // Create Pageable object with page and size, no sorting
-//        Pageable pageable = PageRequest.of(page, size);
-//
-//        // Assuming you're searching by title here as well, adjust query to filter by title if needed
-//        Page<Content> contentsPage = contentRepository.findByTitleContainingIgnoreCase(title, pageable); // Filter by title if needed
-//
-//        // Map Contents to ContentResponse
-//        return contentsPage.map(contentMapper::toContentResponse);
-//    }
-
+    @Override
+    public ContentResponse findContentBySlug(String slug) {
+        return contentRepository.findBySlugAndIsDeletedIsFalseAndIsDraftIsFalse(slug).orElseThrow(
+                () -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Content not found..."
+                )
+        );
+    }
 
     @Override
     public BasedMessage softDeleteById(String id, Jwt jwt) {
@@ -263,10 +235,6 @@ public class ContentServiceImpl implements ContentService {
                 .build();
     }
 
-//    @KafkaListener(topics = "content-created-events-topic", groupId = "content-service")
-//    public void consumeContentCreatedEvent(@Payload ContentCreatedEvent contentCreatedEvent) {
-//        log.info("Consumed content created event: {}", contentCreatedEvent);
-//    }
 
     //comment-created-events-topic
     @KafkaListener(topics = "comment-created-events-topic", groupId = "content-service")
@@ -290,60 +258,6 @@ public class ContentServiceImpl implements ContentService {
             log.error("Error updating comment count for content: {}", e.getMessage());
         }
     }
-
-    // content-reacted-events-topic
-//    @KafkaListener(topics = "content-reacted-events-topic", groupId = "content-service")
-//    public void reactionCount(@Payload ContentReactedProducer contentReactedProducer) {
-//        try {
-//            Content content = contentRepository.findById(contentReactedProducer.getContentId()).orElseThrow(
-//                    () -> new ResponseStatusException(
-//                            HttpStatus.NOT_FOUND,
-//                            "Content not found..."
-//                    )
-//            );
-//
-//            if (contentReactedProducer.getOldReactionType() != null) {
-//                if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("LIKE")) {
-//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                    communityEngagement.setLikeCount(communityEngagement.getLikeCount() - 1);
-//                    content.setCommunityEngagement(communityEngagement);
-//                } else if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("FIRE")) {
-//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                    communityEngagement.setFireCount(communityEngagement.getFireCount() - 1);
-//                    content.setCommunityEngagement(communityEngagement);
-//                } else if (contentReactedProducer.getOldReactionType().equalsIgnoreCase("LOVE")) {
-//                    CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                    communityEngagement.setLoveCount(communityEngagement.getLoveCount() - 1);
-//                    content.setCommunityEngagement(communityEngagement);
-//                }
-//            }
-//
-//            if (contentReactedProducer.getReactionType().equalsIgnoreCase("LIKE")) {
-//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                communityEngagement.setLikeCount(communityEngagement.getLikeCount() + 1);
-//                content.setCommunityEngagement(communityEngagement);
-//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("DISLIKE")) {
-//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                communityEngagement.setLikeCount(communityEngagement.getLikeCount() - 1);
-//                content.setCommunityEngagement(communityEngagement);
-//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("FIRE")) {
-//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                communityEngagement.setFireCount(communityEngagement.getFireCount() + 1);
-//                content.setCommunityEngagement(communityEngagement);
-//            } else if (contentReactedProducer.getReactionType().equalsIgnoreCase("LOVE")) {
-//                CommunityEngagement communityEngagement = content.getCommunityEngagement();
-//                communityEngagement.setLoveCount(communityEngagement.getLoveCount() + 1);
-//                content.setCommunityEngagement(communityEngagement);
-//            }
-//
-//            contentRepository.save(content);
-//
-//
-//            log.info("Reaction count updated for content: {}", content.getId());
-//        } catch (Exception e) {
-//            log.error("Error updating reaction count for content: {}", e.getMessage());
-//        }
-//    }
 
     @KafkaListener(topics = "content-reacted-events-topic", groupId = "content-service")
     public void reactionCount(@Payload ContentReactedProducer contentReactedProducer) {

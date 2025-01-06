@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ContentRepository extends MongoRepository<Content, String> {
 
-    Optional<ContentResponse> findByTitle(String title);
+    Optional<ContentResponse> findBySlugAndIsDeletedIsFalseAndIsDraftIsFalse(String slug);
 
     Optional<ContentResponse> findByIdAndIsDeletedIsFalseAndIsDraftIsFalse(String id);
 
@@ -27,4 +27,6 @@ public interface ContentRepository extends MongoRepository<Content, String> {
     Page<Content> findByIsDraftIsTrueAndIsDeletedIsFalse(Pageable pageable);
 
     Page<Content> findByAuthorUuidAndIsDeletedIsFalse(String authorUuid, Pageable pageable);
+
+
 }

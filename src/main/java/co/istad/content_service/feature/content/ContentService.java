@@ -23,6 +23,8 @@ public interface ContentService {
 
     Page<ContentResponse> getAllContentByAuthorUuid(String authorUuid, int page, int size);
 
+    ContentResponse findContentBySlug (String slug);
+
 
 
 //    Page<ContentResponse> findBySlug(String slug, int page, int size);

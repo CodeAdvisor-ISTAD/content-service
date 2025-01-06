@@ -26,6 +26,12 @@ public class ContentController {
     private final ContentService contentService;
 
 
+    @GetMapping("/slug/{slug}")
+    ContentResponse findContentBySlug(@PathVariable String slug) {
+        log.info("slug: {}", slug);
+        return contentService.findContentBySlug(slug);
+    }
+
     @GetMapping("/me")
     public String getContentMe(@AuthenticationPrincipal Jwt jwt,
                                @RequestParam(defaultValue = "0") int page,
