@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface ContentRepository extends MongoRepository<Content, String> {
 
+    Optional<ContentResponse> findByAuthorUuid(String authorUuid);
     Optional<ContentResponse> findBySlugAndIsDeletedIsFalseAndIsDraftIsFalse(String slug);
 
     Optional<ContentResponse> findByIdAndIsDeletedIsFalseAndIsDraftIsFalse(String id);

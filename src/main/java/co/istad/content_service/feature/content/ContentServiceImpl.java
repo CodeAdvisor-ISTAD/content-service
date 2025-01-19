@@ -211,6 +211,7 @@ public class ContentServiceImpl implements ContentService {
         content.setCommunityEngagement(communityEngagement);
         content.setTags(existingTagNames);
         content.setIsDeleted(false);
+        content.setAuthorUuid(userUuid);
 
         contentRepository.save(content);
 

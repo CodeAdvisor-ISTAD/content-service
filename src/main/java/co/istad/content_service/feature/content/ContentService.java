@@ -25,13 +25,9 @@ public interface ContentService {
 
     ContentResponse findContentBySlug (String slug);
 
-
-
 //    Page<ContentResponse> findBySlug(String slug, int page, int size);
 
 //    Page<ContentResponse> findByTitle(String title, int page, int size);
 //    Page<ContentResponse> findContentByTag(String tag, int page, int size);
-
-
 }
 

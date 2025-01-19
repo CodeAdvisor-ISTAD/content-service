@@ -43,6 +43,13 @@ public class ContentController {
         return contentService.getAllContentByAuthorUuid(userUuid, page, size).toString();
     }
 
+    // get content by userAuthorUuid
+    @GetMapping("/author/{authorUuid}")
+    public Page<ContentResponse> getAllContentByAuthorUuid(@PathVariable String authorUuid, @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size) {
+        return contentService.getAllContentByAuthorUuid(authorUuid, page, size);
+    }
+
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     BasedMessage softDeleteById(@PathVariable String id,
@@ -76,6 +83,7 @@ public class ContentController {
             @RequestParam(defaultValue = "10") int size) {
         return contentService.searchContent(query, searchBy, page, size);
     }
+
 
 //    @PreAuthorize("isAuthenticated()")
     @GetMapping("/all")

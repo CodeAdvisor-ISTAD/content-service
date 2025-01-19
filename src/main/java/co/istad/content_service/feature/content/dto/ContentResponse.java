@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record ContentResponse(
+        String id,
         String title,
 
         String content, // or content
@@ -22,7 +23,7 @@ public record ContentResponse(
 
         Boolean isDraft,
 
-        String authorId,
+        String authorUuid,
 
         LocalDateTime createdDate
 
