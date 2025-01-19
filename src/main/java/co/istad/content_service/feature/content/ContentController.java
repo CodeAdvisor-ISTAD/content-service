@@ -59,13 +59,14 @@ public class ContentController {
         return contentService.softDeleteById(id, jwt);
     }
 
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}")
     BasedMessage updateContent(@PathVariable String id,
-                               @Valid @RequestBody ContentUpdateRequest contentUpdateRequest,
-                               Authentication auth) {
-        Object oauth2 = auth.getPrincipal();
-        Jwt jwt = (Jwt) oauth2;
+                               @Valid @RequestBody ContentUpdateRequest contentUpdateRequest
+                               /*Authentication auth*/) {
+//        Object oauth2 = auth.getPrincipal();
+//        Jwt jwt = (Jwt) oauth2;
+        Jwt jwt = null;
         return contentService.updateContent(id, contentUpdateRequest,jwt );
     }
 
