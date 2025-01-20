@@ -40,7 +40,6 @@ public class ContentServiceImpl implements ContentService {
     private final ContentMapper contentMapper;
 
     private final TagRepository tagRepository;
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
@@ -170,6 +169,7 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public BasedResponse<?> createContent(ContentCreateRequest contentCreateRequest, Jwt jwt) {
+        ContentCreatedEvent contentCreatedEvent = new ContentCreatedEvent();
         String userUuid = jwt.getClaimAsString("userUuid");
         if (userUuid == null) {
             throw new ResponseStatusException(
@@ -220,7 +220,6 @@ public class ContentServiceImpl implements ContentService {
         content.setAuthorUuid(userUuid);
 
         contentRepository.save(content);
-
 
         // Produce event
 
