@@ -1,8 +1,8 @@
 spring.application.name: content-service
 
 spring:
-#  profiles:
-#    active: dev
+  profiles:
+    active: dev
   config:
     import: "optional:configserver:"
   cloud:
