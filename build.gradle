@@ -40,6 +40,8 @@ dependencies {
 
     // Spring Data MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // validate
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     compileOnly 'org.projectlombok:lombok'
 
@@ -75,6 +77,10 @@ dependencies {
 
     // resource server
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+
+    //actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 }
 
