@@ -17,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +27,12 @@ public class ContentController {
 
     private final ContentService contentService;
 
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/test")
+    Map<String, String> test() {
+        return Map.of("message", "You are authenticated");
+    }
 
     @GetMapping("/slug/{slug}")
     ContentResponse findContentBySlug(@PathVariable String slug) {
